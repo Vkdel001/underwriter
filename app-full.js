@@ -381,7 +381,7 @@ Format output in clear sections matching the form structure.`);
     result1.style.display = 'none';
 
     try {
-        const response = await fetch('http://localhost:3000/extract', {
+        const response = await fetch(`${API_BASE_URL}/extract`, {
             method: 'POST',
             body: formData
         });
@@ -438,7 +438,7 @@ Format as a structured list.`);
     result2.style.display = 'none';
 
     try {
-        const response = await fetch('http://localhost:3000/extract', {
+        const response = await fetch(`${API_BASE_URL}/extract`, {
             method: 'POST',
             body: formData
         });
@@ -493,7 +493,7 @@ generateBtn.addEventListener('click', async () => {
     summaryResult.style.display = 'none';
 
     try {
-        const response = await fetch('http://localhost:3000/generate-docx', {
+        const response = await fetch(`${API_BASE_URL}/generate-docx`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -542,7 +542,7 @@ document.getElementById('downloadDocxBtn').addEventListener('click', async () =>
     if (!mappedDataGlobal) return;
 
     try {
-        const response = await fetch('http://localhost:3000/download-docx', {
+        const response = await fetch(`${API_BASE_URL}/download-docx`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
