@@ -1,3 +1,8 @@
+// API Base URL - works for both local and production
+const API_BASE_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000' 
+    : window.location.origin;
+
 // Step 1: Extract from proposal
 const uploadArea1 = document.getElementById('uploadArea1');
 const proposalFile = document.getElementById('proposalFile');
