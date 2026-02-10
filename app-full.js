@@ -146,30 +146,84 @@ Extract:
 
 🔴 CRITICAL: SMOKING AND ALCOHOL CHECKBOX READING 🔴
 
-The form has two rows for Smoking and Alcohol with checkbox layout:
-┌─────────────┬─────┬────────────┬─────┐
-│ Question    │ Yes │ Frequency  │ No  │
-│             │(L)  │            │(R)  │
-└─────────────┴─────┴────────────┴─────┘
+⚠️⚠️⚠️ THESE ARE TWO COMPLETELY SEPARATE ROWS - NEVER MIX THEM! ⚠️⚠️⚠️
 
-READING INSTRUCTIONS:
-- **Smoking row**: Has "Yes" checkbox (LEFT) with space for details, then "Frequency" label, then "No" checkbox (RIGHT)
-- **Alcohol row**: Same layout - "Yes" (LEFT) | "Frequency" | "No" (RIGHT)
+The form has TWO SEPARATE rows that are PHYSICALLY DIFFERENT:
 
-STEP-BY-STEP:
-1. Look at the Smoking row
-2. Check if the LEFT checkbox (under "Yes") has a checkmark → Smoking = Yes
-3. Check if the RIGHT checkbox (after "Frequency", under "No") has a checkmark → Smoking = No
-4. Repeat for Alcohol row
+ROW 1 - SMOKING (TOP ROW):
+┌─────────┬─────┬────────────────┬─────┐
+│ Smoking │ Yes │ [Frequency]    │ No  │
+│         │(L)  │ (handwritten)  │(R)  │
+└─────────┴─────┴────────────────┴─────┘
 
-EXAMPLES:
-- If checkmark is in LEFT box (before "Frequency") = YES
-- If checkmark is in RIGHT box (after "Frequency") = NO
-- If there's handwritten text like "I PIPE OCCASSIONALLY" near the Yes checkbox = YES
+ROW 2 - ALCOHOL (BOTTOM ROW):
+┌─────────┬─────┬────────────────┬─────┐
+│ Alcohol │ Yes │ [Frequency]    │ No  │
+│         │(L)  │ (handwritten)  │(R)  │
+└─────────┴─────┴────────────────┴─────┘
 
-Extract:
-- Smoking status: Yes/No (based on checkbox position)
-- Alcohol status: Yes/No (based on checkbox position)
+🚨 ABSOLUTE RULES - VIOLATION WILL CAUSE ERRORS:
+
+1. **ROW ISOLATION**: Each row is INDEPENDENT. Text in Smoking row belongs ONLY to Smoking. Text in Alcohol row belongs ONLY to Alcohol.
+
+2. **COMMON ERROR TO AVOID**: 
+   ❌ WRONG: "Smoking: No - OCCASIONALLY" (mixing checkbox from Smoking with text from Alcohol)
+   ✅ CORRECT: "Smoking: No" AND separately "Alcohol: Yes - OCCASIONALLY"
+
+3. **IF YOU SEE "OCCASIONALLY" TEXT**: 
+   - First determine: Is this text in the SMOKING row or ALCOHOL row?
+   - Look at which row label (Smoking/Alcohol) is closest to the text
+   - ONLY report the text with the correct row
+
+4. **PHYSICAL LOCATION MATTERS**:
+   - Text written in the TOP row (near "Smoking" label) = Smoking frequency
+   - Text written in the BOTTOM row (near "Alcohol" label) = Alcohol frequency
+
+MANDATORY EXTRACTION PROCESS:
+
+**STEP 1 - SMOKING ROW (TOP ROW) ONLY:**
+1. Find the row with "Smoking" label on the far left
+2. In THIS ROW ONLY, check LEFT checkbox (Yes) - checked or not?
+3. In THIS ROW ONLY, check RIGHT checkbox (No) - checked or not?
+4. In THIS ROW ONLY, read any handwritten text in the frequency field
+5. STOP - Do not look at any other row yet
+
+**STEP 2 - ALCOHOL ROW (BOTTOM ROW) ONLY:**
+1. Find the row with "Alcohol" label on the far left
+2. In THIS ROW ONLY, check LEFT checkbox (Yes) - checked or not?
+3. In THIS ROW ONLY, check RIGHT checkbox (No) - checked or not?
+4. In THIS ROW ONLY, read any handwritten text in the frequency field
+5. STOP - Do not mix with Smoking row
+
+**STEP 3 - VERIFICATION (MANDATORY):**
+Before reporting, state:
+- "SMOKING ROW: I see [LEFT/RIGHT] checkbox checked. Handwritten text in Smoking row: [text or NONE]"
+- "ALCOHOL ROW: I see [LEFT/RIGHT] checkbox checked. Handwritten text in Alcohol row: [text or NONE]"
+
+**STEP 4 - REPORT SEPARATELY:**
+- **Smoking status:** [Yes/No based on Smoking row checkbox] [+ text from Smoking row ONLY if Yes]
+- **Alcohol status:** [Yes/No based on Alcohol row checkbox] [+ text from Alcohol row ONLY if Yes]
+
+REAL-WORLD EXAMPLES FROM ACTUAL FORMS:
+
+Example 1:
+- Smoking row: RIGHT checkbox (No) checked, no text → "Smoking: No"
+- Alcohol row: LEFT checkbox (Yes) checked, text "OCCASIONALLY" → "Alcohol: Yes - OCCASIONALLY"
+
+Example 2:
+- Smoking row: LEFT checkbox (Yes) checked, text "I PIPE" → "Smoking: Yes - I PIPE"
+- Alcohol row: RIGHT checkbox (No) checked, no text → "Alcohol: No"
+
+Example 3:
+- Smoking row: LEFT checkbox (Yes) checked, text "2 CIGARETTES DAILY" → "Smoking: Yes - 2 CIGARETTES DAILY"
+- Alcohol row: LEFT checkbox (Yes) checked, text "SOCIALLY" → "Alcohol: Yes - SOCIALLY"
+
+🚨 FINAL CHECK BEFORE SUBMITTING:
+- Does my Smoking answer contain ONLY data from the Smoking row? YES/NO
+- Does my Alcohol answer contain ONLY data from the Alcohol row? YES/NO
+- Did I accidentally mix text from one row into the other? YES/NO (must be NO)
+
+If you cannot clearly separate the rows, state: "Unable to clearly distinguish between Smoking and Alcohol rows - manual review required"
 
 **PAGE 2 - CHOICE OF PLAN & FAMILY HISTORY:**
 
