@@ -1,3 +1,8 @@
+// API Base URL - works for both local and production
+const API_BASE_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000' 
+    : window.location.origin;
+
 // Step 1: Extract from proposal
 const uploadArea1 = document.getElementById('uploadArea1');
 const proposalFile = document.getElementById('proposalFile');
@@ -381,7 +386,7 @@ Format output in clear sections matching the form structure.`);
     result1.style.display = 'none';
 
     try {
-        const response = await fetch('http://localhost:3000/extract', {
+        const response = await fetch(`${API_BASE_URL}/extract`, {
             method: 'POST',
             body: formData
         });
@@ -438,7 +443,7 @@ Format as a structured list.`);
     result2.style.display = 'none';
 
     try {
-        const response = await fetch('http://localhost:3000/extract', {
+        const response = await fetch(`${API_BASE_URL}/extract`, {
             method: 'POST',
             body: formData
         });
@@ -467,8 +472,6 @@ Format as a structured list.`);
 // Check if generate button should be enabled
 function checkGenerateButton() {
     if (extractedProposalData && extractedEcmData) {
-        // Show manual verification section
-        document.getElementById('manualVerificationSection').style.display = 'block';
         generateBtn.disabled = false;
     }
 }
@@ -495,7 +498,7 @@ generateBtn.addEventListener('click', async () => {
     summaryResult.style.display = 'none';
 
     try {
-        const response = await fetch('http://localhost:3000/generate-docx', {
+        const response = await fetch(`${API_BASE_URL}/generate-docx`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -544,7 +547,7 @@ document.getElementById('downloadDocxBtn').addEventListener('click', async () =>
     if (!mappedDataGlobal) return;
 
     try {
-        const response = await fetch('http://localhost:3000/download-docx', {
+        const response = await fetch(`${API_BASE_URL}/download-docx`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -109,14 +109,67 @@ FORM STRUCTURE (6 pages):
 - Serial No/LID, Proposal Form number
 - Sales Quote No, Effective Date
 - Name (Title, Surname, Other Names, Maiden Name)
-- Nationality, Gender, Marital Status
+- Nationality, Gender
+
+🔴 CRITICAL: MARITAL STATUS CHECKBOX READING 🔴
+
+The Marital Status field has checkbox layout:
+┌────────┬─────────┐
+│ Single │ Married │
+│  (L)   │   (R)   │
+└────────┴─────────┘
+
+READING INSTRUCTIONS:
+- LEFT checkbox = Single
+- RIGHT checkbox = Married
+
+STEP-BY-STEP:
+1. Look at the Marital Status row
+2. Check if the LEFT checkbox has a checkmark → Marital Status = Single
+3. Check if the RIGHT checkbox has a checkmark → Marital Status = Married
+
+VERIFICATION: State which checkbox (LEFT/RIGHT) has the checkmark before reporting marital status.
+
+EXAMPLES:
+- Checkmark in LEFT box = Single
+- Checkmark in RIGHT box = Married
+
+Extract:
+- Marital Status: Single/Married (based on checkbox position)
+
 - Date of Birth, ID/Passport No
 - Residential Address (Town/City, Country, Postal Code)
 - Mailing Address
 - Contact Details (Mobile, Email)
 - Occupation, Company Name, Length of Service
 - Height (in M and cms), Weight (in kgs) - HANDWRITTEN, look carefully
-- Smoking status, Alcohol status
+
+🔴 CRITICAL: SMOKING AND ALCOHOL CHECKBOX READING 🔴
+
+The form has two rows for Smoking and Alcohol with checkbox layout:
+┌─────────────┬─────┬────────────┬─────┐
+│ Question    │ Yes │ Frequency  │ No  │
+│             │(L)  │            │(R)  │
+└─────────────┴─────┴────────────┴─────┘
+
+READING INSTRUCTIONS:
+- **Smoking row**: Has "Yes" checkbox (LEFT) with space for details, then "Frequency" label, then "No" checkbox (RIGHT)
+- **Alcohol row**: Same layout - "Yes" (LEFT) | "Frequency" | "No" (RIGHT)
+
+STEP-BY-STEP:
+1. Look at the Smoking row
+2. Check if the LEFT checkbox (under "Yes") has a checkmark → Smoking = Yes
+3. Check if the RIGHT checkbox (after "Frequency", under "No") has a checkmark → Smoking = No
+4. Repeat for Alcohol row
+
+EXAMPLES:
+- If checkmark is in LEFT box (before "Frequency") = YES
+- If checkmark is in RIGHT box (after "Frequency") = NO
+- If there's handwritten text like "I PIPE OCCASSIONALLY" near the Yes checkbox = YES
+
+Extract:
+- Smoking status: Yes/No (based on checkbox position)
+- Alcohol status: Yes/No (based on checkbox position)
 
 **PAGE 2 - CHOICE OF PLAN & FAMILY HISTORY:**
 
@@ -378,6 +431,38 @@ EXTRACTION RULES:
 6. **Dates:** Format as DD/MM/YYYY
 7. **Currency:** Include "MUR" for monetary amounts
 8. **Percentages:** For beneficiaries, ensure total = 100%
+
+---
+
+**QUOTATION PAGE (if present in the PDF):**
+
+The PDF may also contain a quotation/illustration page titled "NIC PROSPERITY PLAN - QUOTATION" or similar.
+
+If this page is found, extract from the **KEY BENEFITS (MUR)** section:
+- **Death Benefit:** [MUR amount]
+- **Additional Death Benefit:** [MUR amount]
+- **Accidental Death Benefit:** [MUR amount]
+- **Total & Permanent Disability (TPD):** [MUR amount]
+- **Critical Illness Benefit:** [MUR amount]
+- **Loyalty Bonus:** [MUR amount]
+- **Free Funeral Benefit:** [MUR amount]
+
+Also extract from **PREMIUM DETAILS (MUR)** section:
+- Basic Premium
+- Additional Death Benefit Premium
+- Accidental Death Benefit Premium
+- Total & Permanent Disability (TPD) Premium
+- Critical Illness Benefit Premium
+- Total Premium
+
+⚠️ **CRITICAL CALCULATION:**
+**New Policy Sum Assured = Death Benefit + Additional Death Benefit**
+
+This is the amount to use for the "Sum At Risk" field in the underwriting worksheet.
+
+**PRIORITY RULE:** If quotation page values differ from proposal form PAGE 2 values, **ALWAYS USE QUOTATION PAGE VALUES** as they are the final approved amounts.
+
+---
 
 Format output in clear sections matching the form structure.`);
 
