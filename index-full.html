@@ -109,6 +109,16 @@
             cursor: not-allowed;
         }
 
+        .csv-btn:hover:not(:disabled) {
+            background: #45a049 !important;
+            transform: translateY(-1px);
+        }
+
+        .csv-btn:disabled {
+            background: #cccccc !important;
+            cursor: not-allowed !important;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -243,7 +253,12 @@
                     </div>
                     
                     <div class="result" id="result1">
-                        <h3>✅ Proposal Extracted</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="margin: 0;">✅ Proposal Extracted</h3>
+                            <button id="downloadProposalCsvBtn" class="csv-btn" disabled style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto;">
+                                📥 Download CSV
+                            </button>
+                        </div>
                         <div class="result-content" id="extractedContent"></div>
                     </div>
                 </div>
@@ -265,7 +280,12 @@
                     </div>
                     
                     <div class="result" id="result2">
-                        <h3>✅ ECM Data Extracted</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="margin: 0;">✅ ECM Data Extracted</h3>
+                            <button id="downloadEcmCsvBtn" class="csv-btn" disabled style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto;">
+                                📥 Download CSV
+                            </button>
+                        </div>
                         <div class="result-content" id="ecmContent"></div>
                     </div>
                 </div>
@@ -295,7 +315,12 @@
             <div class="step" style="margin-top: 30px;">
                 <h2>📊 Underwriter Summary</h2>
                 <div class="result" id="summaryResult" style="display: none;">
-                    <h3>Decision Summary</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">Decision Summary</h3>
+                        <button id="downloadSummaryCsvBtn" class="csv-btn" disabled style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; width: auto;">
+                            📥 Download CSV
+                        </button>
+                    </div>
                     <div class="result-content" id="summaryContent" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 6px;"></div>
                 </div>
             </div>

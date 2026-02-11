@@ -33,9 +33,332 @@ let extractedEcmData = null;
 let mappedDataGlobal = null;
 let underwriterSummaryGlobal = null;
 
+// ============================================
+// CSV EXPORT FUNCTIONS
+// ============================================
+
+/**
+ * Clean AI-generated text by removing markdown formatting
+ */
+function cleanExtractedText(text) {
+    if (!text) return '';
+    
+    // Remove markdown bold
+    text = text.replace(/\*\*/g, '');
+    
+    // Remove markdown headers
+    text = text.replace(/^#+\s/gm, '');
+    
+    // Remove bullet points
+    text = text.replace(/^[•\-\*]\s/gm, '');
+    
+    return text;
+}
+
+/**
+ * Extract field-value pairs from text
+ */
+function extractFieldValuePairs(text) {
+    const pairs = [];
+    const lines = text.split('\n');
+    
+    for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+        
+        // Skip section headers (all caps or starts with ===)
+        if (line === line.toUpperCase() && line.length > 20) {
+            continue;
+        }
+        if (line.startsWith('===') || line.startsWith('---')) {
+            continue;
+        }
+        
+        // Pattern: "Field: Value"
+        const colonMatch = line.match(/^([^:]+):\s*(.*)$/);
+        if (colonMatch) {
+            const field = colonMatch[1].trim();
+            const value = colonMatch[2].trim();
+            if (field && value && field.length < 100) { // Reasonable field name length
+                pairs.push({ field, value });
+            }
+            continue;
+        }
+        
+        // Pattern: "Field - Value"
+        const dashMatch = line.match(/^([^-]+)\s*-\s*(.+)$/);
+        if (dashMatch) {
+            const field = dashMatch[1].trim();
+            const value = dashMatch[2].trim();
+            if (field && value && field.length < 100) {
+                pairs.push({ field, value });
+            }
+        }
+    }
+    
+    return pairs;
+}
+
+/**
+ * Escape CSV value (handle commas, quotes, newlines)
+ */
+function escapeCSVValue(value) {
+    if (!value) return '';
+    
+    value = String(value);
+    
+    // If contains comma, quote, or newline, wrap in quotes
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        // Escape existing quotes by doubling them
+        value = value.replace(/"/g, '""');
+        return `"${value}"`;
+    }
+    
+    return value;
+}
+
+/**
+ * Generate CSV content from field-value pairs
+ */
+function generateCSV(pairs) {
+    let csv = 'Field,Value\n';
+    
+    for (let pair of pairs) {
+        const field = escapeCSVValue(pair.field);
+        const value = escapeCSVValue(pair.value);
+        csv += `${field},${value}\n`;
+    }
+    
+    return csv;
+}
+
+/**
+ * Extract name from proposal data for filename
+ * Looks for Surname + Other Name(s) or Full Name
+ */
+function extractNameForFilename(text) {
+    // Try to find Surname and Other Name(s) separately (preferred format)
+    const surnameMatch = text.match(/Surname:\s*([^\n]+)/i);
+    const otherNameMatch = text.match(/Other\s+Name(?:\(s\))?:\s*([^\n]+)/i);
+    
+    if (surnameMatch && otherNameMatch) {
+        let surname = surnameMatch[1].trim();
+        let otherName = otherNameMatch[1].trim();
+        
+        // Remove title from other name if present
+        otherName = otherName.replace(/^(Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Miss)\s+/i, '');
+        
+        // Combine: Surname_OtherName
+        let fullName = `${surname}_${otherName}`;
+        
+        // Replace spaces with underscores
+        fullName = fullName.replace(/\s+/g, '_');
+        
+        // Remove special characters
+        fullName = fullName.replace(/[^a-zA-Z0-9_]/g, '');
+        
+        return fullName;
+    }
+    
+    // Fallback: Look for "Name:" or "Full Name:" field
+    const nameMatch = text.match(/(?:Full\s+)?Name:\s*([^\n]+)/i);
+    if (nameMatch) {
+        let name = nameMatch[1].trim();
+        // Remove title (Mr., Mrs., Ms., Dr., etc.)
+        name = name.replace(/^(Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Miss)\s+/i, '');
+        // Replace spaces with underscores
+        name = name.replace(/\s+/g, '_');
+        // Remove special characters
+        name = name.replace(/[^a-zA-Z0-9_]/g, '');
+        return name;
+    }
+    
+    return null;
+}
+
+/**
+ * Generate filename for CSV download
+ */
+function generateCSVFilename(proposalText) {
+    const name = extractNameForFilename(proposalText);
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    if (name) {
+        return `proposal_${name}_${date}.csv`;
+    } else {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[1].split('-').slice(0, 3).join('');
+        return `proposal_extracted_${date}_${timestamp}.csv`;
+    }
+}
+
+/**
+ * Trigger CSV download in browser
+ */
+function downloadCSV(csvContent, filename) {
+    // Create blob with UTF-8 BOM for Excel compatibility
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+/**
+ * Main function to export proposal data as CSV
+ */
+function exportProposalToCSV() {
+    if (!extractedProposalData) {
+        alert('No proposal data available to export');
+        return;
+    }
+    
+    try {
+        // Clean the text
+        const cleanedText = cleanExtractedText(extractedProposalData);
+        
+        // Extract field-value pairs
+        const pairs = extractFieldValuePairs(cleanedText);
+        
+        if (pairs.length === 0) {
+            alert('No data could be extracted. The format may not be supported.');
+            return;
+        }
+        
+        // Generate CSV
+        const csvContent = generateCSV(pairs);
+        
+        // Generate filename
+        const filename = generateCSVFilename(extractedProposalData);
+        
+        // Download
+        downloadCSV(csvContent, filename);
+        
+        console.log(`✓ CSV exported: ${filename} (${pairs.length} fields)`);
+        
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('Failed to export CSV. Please try again.');
+    }
+}
+
+/**
+ * Export ECM data as CSV
+ */
+function exportEcmToCSV() {
+    if (!extractedEcmData) {
+        alert('No ECM data available to export');
+        return;
+    }
+    
+    try {
+        // Clean the text
+        const cleanedText = cleanExtractedText(extractedEcmData);
+        
+        // Extract field-value pairs
+        const pairs = extractFieldValuePairs(cleanedText);
+        
+        if (pairs.length === 0) {
+            alert('No data could be extracted. The format may not be supported.');
+            return;
+        }
+        
+        // Generate CSV
+        const csvContent = generateCSV(pairs);
+        
+        // Try to extract customer name from ECM data or use proposal data
+        let customerName = null;
+        
+        // First try to get name from ECM data
+        customerName = extractNameForFilename(extractedEcmData);
+        
+        // If not found in ECM, try proposal data
+        if (!customerName && extractedProposalData) {
+            customerName = extractNameForFilename(extractedProposalData);
+        }
+        
+        // Generate filename with customer name if available
+        const date = new Date().toISOString().split('T')[0];
+        const filename = customerName 
+            ? `ecm_${customerName}_${date}.csv`
+            : `ecm_portfolio_${date}.csv`;
+        
+        // Download
+        downloadCSV(csvContent, filename);
+        
+        console.log(`✓ ECM CSV exported: ${filename} (${pairs.length} fields)`);
+        
+    } catch (error) {
+        console.error('Error exporting ECM CSV:', error);
+        alert('Failed to export ECM CSV. Please try again.');
+    }
+}
+
+/**
+ * Export Decision Summary as CSV
+ */
+function exportSummaryToCSV() {
+    if (!underwriterSummaryGlobal) {
+        alert('No decision summary available to export');
+        return;
+    }
+    
+    try {
+        // Clean the text
+        const cleanedText = cleanExtractedText(underwriterSummaryGlobal);
+        
+        // Extract field-value pairs
+        const pairs = extractFieldValuePairs(cleanedText);
+        
+        if (pairs.length === 0) {
+            alert('No data could be extracted. The format may not be supported.');
+            return;
+        }
+        
+        // Generate CSV
+        const csvContent = generateCSV(pairs);
+        
+        // Try to extract customer name from proposal data
+        let customerName = null;
+        if (extractedProposalData) {
+            customerName = extractNameForFilename(extractedProposalData);
+        }
+        
+        // Generate filename with customer name if available
+        const date = new Date().toISOString().split('T')[0];
+        const filename = customerName 
+            ? `summary_${customerName}_${date}.csv`
+            : `decision_summary_${date}.csv`;
+        
+        // Download
+        downloadCSV(csvContent, filename);
+        
+        console.log(`✓ Summary CSV exported: ${filename} (${pairs.length} fields)`);
+        
+    } catch (error) {
+        console.error('Error exporting Summary CSV:', error);
+        alert('Failed to export Summary CSV. Please try again.');
+    }
+}
+
 // Step 1: Proposal upload
 uploadArea1.addEventListener('click', () => proposalFile.click());
 proposalFile.addEventListener('change', (e) => handleProposalFile(e.target.files[0]));
+
+// CSV Download Button Handlers
+document.getElementById('downloadProposalCsvBtn').addEventListener('click', exportProposalToCSV);
+document.getElementById('downloadEcmCsvBtn').addEventListener('click', exportEcmToCSV);
+document.getElementById('downloadSummaryCsvBtn').addEventListener('click', exportSummaryToCSV);
 
 uploadArea1.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -537,6 +860,9 @@ Format output in clear sections matching the form structure.`);
             extractedContent.textContent = extractedProposalData;
             result1.style.display = 'block';
             
+            // Enable CSV download button
+            document.getElementById('downloadProposalCsvBtn').disabled = false;
+            
             // Check if we can enable generate button
             checkGenerateButton();
         } else {
@@ -593,6 +919,9 @@ Format as a structured list.`);
             extractedEcmData = data.extractedInfo;
             ecmContent.textContent = extractedEcmData;
             result2.style.display = 'block';
+            
+            // Enable ECM CSV download button
+            document.getElementById('downloadEcmCsvBtn').disabled = false;
             
             // Check if we can enable generate button
             checkGenerateButton();
@@ -668,6 +997,9 @@ generateBtn.addEventListener('click', async () => {
             if (data.underwriterSummary) {
                 summaryContent.textContent = data.underwriterSummary;
                 summaryResult.style.display = 'block';
+                
+                // Enable Summary CSV download button
+                document.getElementById('downloadSummaryCsvBtn').disabled = false;
             }
         } else {
             throw new Error(data.error || 'Generation failed');
